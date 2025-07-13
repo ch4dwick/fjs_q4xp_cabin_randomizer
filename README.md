@@ -1,2 +1,17 @@
 # fjs_q4xp_cabin_randomizer
 FlyJSim Q4XP Cabin Activity Randomizer
+
+Randomly move cabin assets to simulate passenger activity.
+
+Before take off & during descent: Window Shades Up, overhead luggage closed, tray tables stowed.
+
+Cruising and on ground: Randomly move these items.
+
+## Installation
+- A licesned copy of [FlyJSim's Q4XP](https://www.flyjsim.com/q4xp)
+- Install latest version of [FlyWithLua](https://github.com/X-Friese/FlyWithLua)
+- Put this script in \<your x-plane install dir>\Resources\plugins\FlyWithLua\Scripts
+
+Seatbelt sign: off. Just watch the activity in the aisle.
+
+Seatbelt sign: on. All activity stops.
