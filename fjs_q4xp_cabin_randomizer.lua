@@ -81,9 +81,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
         if seatbelts == 0 then
             random_shade = math.random(WINDOW_COUNT)
-            if window_cycled[random_shade] == 0 then
-                window_cycled[random_shade] = math.random()
-            end
+            window_cycled[random_shade] = math.random()
             XPLMSetDatavf(CABIN_WINDOW_REF, window_cycled, 0, WINDOW_COUNT)
         end
     end
