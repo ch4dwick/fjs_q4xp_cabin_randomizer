@@ -1,5 +1,4 @@
-# fjs_q4xp_cabin_randomizer
-FlyJSim Q4XP Cabin Activity Randomizer
+# FlyJSim Q4XP Cabin Activity Randomizer
 
 Randomly move cabin assets to simulate passenger activity.
 
