@@ -104,10 +104,6 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
                 end
             end
 
-            for i = 0, #open_luggages do
-                print(open_luggages[i])
-            end
-
             if ovhd_opened < OVHD_MAX_OPEN and overhead_luggage[random_overhead_luggage] == 0 then
                 random_overhead_luggage = math.random(OVERHEAD_LUGGAGE_COUNT)
                 overhead_luggage[random_overhead_luggage] = 1
