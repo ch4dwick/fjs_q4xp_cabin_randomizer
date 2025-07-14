@@ -86,32 +86,36 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         end
     end
 
-    -- randomly open the overhead cabin during cruise or fasten seatbelts off
+    -- randomly open the overhead luggage during cruise or fasten seatbelts off
     -- Limit the number of open overhead luggage
-    local OVHD_MAX_OPEN = 3
-    local ovhd_opened = 0
+    local OVHD_MAX_OPEN = 5
     function open_overhead_luggage_randomly()
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
-
         if seatbelts == 0 then
+            ovhd_opened = 0
+            random_overhead_luggage = 0
             overhead_luggage = XPLMGetDatavf(OVERHEAD_LUGGAGE_REF, 0, OVERHEAD_LUGGAGE_COUNT)
-            random_overhead_cabin = math.random(OVERHEAD_LUGGAGE_COUNT)
-            if overhead_luggage[random_overhead_cabin] == 0 and ovhd_opened < OVHD_MAX_OPEN then
-                overhead_luggage[random_overhead_cabin] = 1
-                ovhd_opened = ovhd_opened + 1
-            -- gradually close past compartments to make it look natural
-            elseif ovhd_opened >= OVHD_MAX_OPEN then
-                for i = 0, #overhead_luggage-1 do
-                    if overhead_luggage[i] == 1 then 
-                        overhead_luggage[i] = 0
-                        ovhd_opened = ovhd_opened - 1
-                        break
-                    end
+            open_luggages = {}
+            -- count the number of open ovhd luggage doors
+            for i = 0, #overhead_luggage-1 do
+                if overhead_luggage[i] == 1 then 
+                    table.insert(open_luggages, i)
+                    ovhd_opened = ovhd_opened + 1
                 end
-            else
-                overhead_luggage[random_overhead_cabin] = 0
-                ovhd_opened = ovhd_opened - 1
             end
+
+            for i = 0, #open_luggages do
+                print(open_luggages[i])
+            end
+
+            if ovhd_opened < OVHD_MAX_OPEN and overhead_luggage[random_overhead_luggage] == 0 then
+                random_overhead_luggage = math.random(OVERHEAD_LUGGAGE_COUNT)
+                overhead_luggage[random_overhead_luggage] = 1
+            elseif ovhd_opened >= OVHD_MAX_OPEN then
+                random_overhead_luggage = math.random(OVHD_MAX_OPEN)
+                overhead_luggage[open_luggages[random_overhead_luggage]] = 0
+            end
+
             XPLMSetDatavf(OVERHEAD_LUGGAGE_REF, overhead_luggage, 0, OVERHEAD_LUGGAGE_COUNT)
         end
     end
@@ -124,7 +128,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         XPLMSetDatavf(OVERHEAD_LUGGAGE_REF, overhead_luggage, 0, OVERHEAD_LUGGAGE_COUNT)
     end
 
-    -- randomly open the overhead cabin during cruise or fasten seatbelts off
+    -- randomly lower/raise passenger trays during cruise or fasten seatbelts off
     function lower_trays_randomly()
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
 
