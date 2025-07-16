@@ -160,7 +160,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     function close_passenger_trays()
         front_row_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, 4)
-        back_seat_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, WINDOW_COUNT)
+        back_seat_trays = XPLMGetDatavf(BACK_SEAT_TRAY_REF, 0, BACK_SEAT_TRAY_COUNT)
         for i = 0, BACK_SEAT_TRAY_COUNT - 1 do
             if back_seat_trays[i] == 1 then
                 back_seat_trays[i] = 0
