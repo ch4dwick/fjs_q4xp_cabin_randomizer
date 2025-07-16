@@ -13,7 +13,7 @@
 
 if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     -- FJS already randomizes the windows on aircraft load. We can just take this and use during cruise.
-    local LUGGAGE_WINDOW_REF = XPLMFindDataRef("FJS/Q4XP/Manips/CabinWindowShades_Ctl")
+    local PAX_WINDOW_REF = XPLMFindDataRef("FJS/Q4XP/Manips/CabinWindowShades_Ctl")
     -- Not to be mistaken as the index count. this value minus 1
     local WINDOW_COUNT = 56
 
@@ -25,7 +25,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     BACK_SEAT_TRAY_COUNT = 76
 
     -- backup the window state on startup
-    local init_window_states = XPLMGetDatavf(LUGGAGE_WINDOW_REF, 0, WINDOW_COUNT)
+    local init_window_states = XPLMGetDatavf(PAX_WINDOW_REF, 0, WINDOW_COUNT)
 
     -- currently does not work as expected
     -- local init_window_states = create_dataref_table("FJS/Q4XP/Manips/CabinWindowShades_Ctl", "FloatArray")
@@ -43,16 +43,16 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     end
 
     function re_init()
-        XPLMSetDatavf(LUGGAGE_WINDOW_REF, init_window_states, 0, WINDOW_COUNT)
+        XPLMSetDatavf(PAX_WINDOW_REF, init_window_states, 0, WINDOW_COUNT)
         window_cycled = open_window_states
     end
 
-    function update_window_state()
+    function fasten_seatbelt()
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
         save_window_state()
 
         if seatbelts == 1 then
-            XPLMSetDatavf(LUGGAGE_WINDOW_REF, open_window_states, 0, WINDOW_COUNT)
+            raise_window_shades()
             -- reset all the cycled windows so you can animate again.
             close_overhead_luggage()
             close_passenger_trays()
@@ -63,7 +63,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     -- We don't want to accidentally save all the windows in open position although that's perfectly fine.
     -- this also allows the passenger to adjust the blinds while the loop is running
     function save_window_state()
-        current_window_states = XPLMGetDatavf(LUGGAGE_WINDOW_REF, 0, WINDOW_COUNT)
+        current_window_states = XPLMGetDatavf(PAX_WINDOW_REF, 0, WINDOW_COUNT)
         for i = 0, #current_window_states - 1 do
             if
                 current_window_states[i] > 0 and
@@ -73,16 +73,16 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
                 init_window_states[current_slice_val] = window_cycled[current_slice_val]
             end
         end
-        window_cycled = XPLMGetDatavf(LUGGAGE_WINDOW_REF, 0, WINDOW_COUNT)
+        window_cycled = XPLMGetDatavf(PAX_WINDOW_REF, 0, WINDOW_COUNT)
     end
 
     -- randomly open the overhead cabin during cruise or fasten seatbelts off
-    function open_shades_randomly()
+    function lower_shades_randomly()
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
         if seatbelts == 0 then
             random_shade = math.random(WINDOW_COUNT)
             window_cycled[random_shade] = math.random()
-            XPLMSetDatavf(LUGGAGE_WINDOW_REF, window_cycled, 0, WINDOW_COUNT)
+            XPLMSetDatavf(PAX_WINDOW_REF, window_cycled, 0, WINDOW_COUNT)
         end
     end
 
@@ -116,10 +116,26 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         end
     end
 
+    function raise_window_shades()
+        open_window_states = XPLMGetDatavf(PAX_WINDOW_REF, 0, WINDOW_COUNT)
+        for i = 0, WINDOW_COUNT - 1 do
+            if open_window_states[i] > 0 then
+                open_window_states[i] = 0
+                -- use the event loop to make the behavior look gradual instead of simultaneous.
+                break
+            end
+        end
+        XPLMSetDatavf(PAX_WINDOW_REF, open_window_states, 0, WINDOW_COUNT)
+    end
+
     function close_overhead_luggage()
-        overhead_luggage = {}
+        overhead_luggage = XPLMGetDatavf(OVERHEAD_LUGGAGE_REF, 0, OVERHEAD_LUGGAGE_COUNT)
         for i = 0, OVERHEAD_LUGGAGE_COUNT - 1 do
-            overhead_luggage[i] = 0
+            if overhead_luggage[i] == 1 then
+                overhead_luggage[i] = 0
+                -- use the event loop to make the behavior look gradual instead of simultaneous.
+                break
+            end
         end
         XPLMSetDatavf(OVERHEAD_LUGGAGE_REF, overhead_luggage, 0, OVERHEAD_LUGGAGE_COUNT)
     end
@@ -143,17 +159,29 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     end
 
     function close_passenger_trays()
-        front_row_trays = {0, 0, 0, 0}
-        back_seat_trays = {}
+        front_row_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, 4)
+        back_seat_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, WINDOW_COUNT)
         for i = 0, BACK_SEAT_TRAY_COUNT - 1 do
-            back_seat_trays[i] = 0
+            if back_seat_trays[i] == 1 then
+                back_seat_trays[i] = 0
+                -- use the event loop to make the behavior look gradual instead of simultaneous.
+                break
+            end
+        end
+
+        for i = 0, 4 - 1 do
+            if front_row_trays[i] == 1 then
+                front_row_trays[i] = 0
+                -- use the event loop to make the behavior look gradual instead of simultaneous.
+                break
+            end
         end
         XPLMSetDatavf(FRONT_ROW_TRAY_REF, front_row_trays, 0, 4)
         XPLMSetDatavf(BACK_SEAT_TRAY_REF, back_seat_trays, 0, BACK_SEAT_TRAY_COUNT)
     end
 
-    do_often("update_window_state()")
-    do_sometimes("open_shades_randomly()")
+    do_often("fasten_seatbelt()")
+    do_sometimes("lower_shades_randomly()")
     do_sometimes("open_overhead_luggage_randomly()")
     do_sometimes("lower_trays_randomly()")
     do_on_exit("re_init()")
