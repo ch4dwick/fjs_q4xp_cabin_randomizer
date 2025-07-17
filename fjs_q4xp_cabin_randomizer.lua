@@ -38,6 +38,11 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     -- used to achieve the effect of gradual opening windows
     local window_cycled = {}
 
+    -- you may prefer to turn this off as it can be annoying in the long term.
+    local enable_lavatory_activity = true
+    -- time between lavatory visits.
+    local lav_timer_start = os.clock()
+
     for i = 1, WINDOW_COUNT do
         open_window_states[i] = 0
         window_cycled[i] = 0
@@ -130,13 +135,26 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         XPLMSetDatavf(PAX_WINDOW_REF, open_window_states, 0, WINDOW_COUNT)
     end
 
+    -- someone used the bathroom
     function random_lavatory()
+        lav_timer_end = os.clock()
+        lav_timer_elapsed = lav_timer_end - lav_timer_start
+        lavatory_door = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
-        if seatbelts == 0 then
+        if enable_lavatory_activity and seatbelts == 0 and lav_timer_elapsed > math.random(60, 300) then
             toilet_seat = get("FJS/Q4XP/Manips/LavSeat_Ctl", 1)
             set_array("FJS/Q4XP/Manips/LavSeat_Ctl", 1, toilet_seat == 1 and 0 or 1)
-            lavatory_front = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
-            set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, lavatory_front == 0 and 1 or 0)
+            set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, 1)
+            command_once("FJS/Q4XP/Animation/flush")
+            lav_timer_start = os.clock()
+        end
+    end
+
+    -- Close lavatory door on next cycle. Don't leave it open. Makes it look natural.
+    function close_lavatory()
+        -- don't interrupt the animation
+        if enable_lavatory_activity and get("FJS/Q4XP/Manips/CabinInnerDoors_Anim", 0) == 1 then
+            set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, 0)
         end
     end
 
@@ -192,13 +210,11 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         XPLMSetDatavf(BACK_SEAT_TRAY_REF, back_seat_trays, 0, BACK_SEAT_TRAY_COUNT)
     end
 
-    -- TODO: FJS/Q4XP/Manips/CabinInnerDoors_Ctl FJS/Q4XP/Manips/LavSeat_Ctl
-
     do_often("fasten_seatbelt()")
+    do_often("close_lavatory()")
     do_sometimes("lower_shades_randomly()")
     do_sometimes("open_overhead_luggage_randomly()")
     do_sometimes("lower_trays_randomly()")
     do_sometimes("random_lavatory()")
     do_on_exit("re_init()")
-    command_once()
 end
