@@ -42,6 +42,8 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     local enable_lavatory_activity = true
     -- time between lavatory visits.
     local lav_timer_start = os.clock()
+    -- next duration for lavatory use
+    local lav_use_next = math.random(60, 300)
 
     for i = 1, WINDOW_COUNT do
         open_window_states[i] = 0
@@ -137,16 +139,17 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     -- someone used the bathroom
     function random_lavatory()
-        lav_timer_end = os.clock()
-        lav_timer_elapsed = lav_timer_end - lav_timer_start
+        lav_timer_interval = os.clock() - lav_timer_start
         lavatory_door = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
-        if enable_lavatory_activity and seatbelts == 0 and lav_timer_elapsed > math.random(60, 300) then
+        if enable_lavatory_activity and seatbelts == 0 and lav_timer_interval > lav_use_next then
             toilet_seat = get("FJS/Q4XP/Manips/LavSeat_Ctl", 1)
             set_array("FJS/Q4XP/Manips/LavSeat_Ctl", 1, toilet_seat == 1 and 0 or 1)
             set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, 1)
             command_once("FJS/Q4XP/Animation/flush")
+            -- reset for next event
             lav_timer_start = os.clock()
+            lav_use_next = math.random(60, 300)
         end
     end
 
