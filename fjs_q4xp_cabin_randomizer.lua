@@ -12,6 +12,7 @@
 -- if your previous session had all the windows up, this script will have nothing to reference the initial windows states so it all windows will remain up.
 
 if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
+    local timer = os.clock()
     -- FJS already randomizes the windows on aircraft load. We can just take this and use during cruise.
     local PAX_WINDOW_REF = XPLMFindDataRef("FJS/Q4XP/Manips/CabinWindowShades_Ctl")
     -- Not to be mistaken as the index count. this value minus 1
@@ -91,6 +92,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     local OVHD_MAX_OPEN = 5
     function open_overhead_luggage_randomly()
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
+
         if seatbelts == 0 then
             ovhd_opened = 0
             random_overhead_luggage = 0
@@ -128,6 +130,13 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         XPLMSetDatavf(PAX_WINDOW_REF, open_window_states, 0, WINDOW_COUNT)
     end
 
+    function random_lavatory()
+        toilet_seat = get("FJS/Q4XP/Manips/LavSeat_Ctl", 1)
+        set_array("FJS/Q4XP/Manips/LavSeat_Ctl", 1, toilet_seat == 1 and 0 or 1)
+        lavatory_front = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
+        set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, lavatory_front == 0 and 1 or 0)
+    end
+
     function close_overhead_luggage()
         overhead_luggage = XPLMGetDatavf(OVERHEAD_LUGGAGE_REF, 0, OVERHEAD_LUGGAGE_COUNT)
         for i = 0, OVERHEAD_LUGGAGE_COUNT - 1 do
@@ -160,7 +169,7 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     function close_passenger_trays()
         front_row_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, 4)
-        back_seat_trays = XPLMGetDatavf(BACK_SEAT_TRAY_REF, 0, BACK_SEAT_TRAY_COUNT)
+        back_seat_trays = XPLMGetDatavf(FRONT_ROW_TRAY_REF, 0, WINDOW_COUNT)
         for i = 0, BACK_SEAT_TRAY_COUNT - 1 do
             if back_seat_trays[i] == 1 then
                 back_seat_trays[i] = 0
@@ -180,9 +189,13 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
         XPLMSetDatavf(BACK_SEAT_TRAY_REF, back_seat_trays, 0, BACK_SEAT_TRAY_COUNT)
     end
 
+    -- TODO: FJS/Q4XP/Manips/CabinInnerDoors_Ctl FJS/Q4XP/Manips/LavSeat_Ctl
+
     do_often("fasten_seatbelt()")
     do_sometimes("lower_shades_randomly()")
     do_sometimes("open_overhead_luggage_randomly()")
     do_sometimes("lower_trays_randomly()")
+    do_sometimes("random_lavatory()")
     do_on_exit("re_init()")
+    command_once()
 end
