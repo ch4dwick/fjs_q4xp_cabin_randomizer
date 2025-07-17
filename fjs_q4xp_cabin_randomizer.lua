@@ -131,10 +131,13 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     end
 
     function random_lavatory()
-        toilet_seat = get("FJS/Q4XP/Manips/LavSeat_Ctl", 1)
-        set_array("FJS/Q4XP/Manips/LavSeat_Ctl", 1, toilet_seat == 1 and 0 or 1)
-        lavatory_front = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
-        set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, lavatory_front == 0 and 1 or 0)
+        DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
+        if seatbelts == 0 then
+            toilet_seat = get("FJS/Q4XP/Manips/LavSeat_Ctl", 1)
+            set_array("FJS/Q4XP/Manips/LavSeat_Ctl", 1, toilet_seat == 1 and 0 or 1)
+            lavatory_front = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
+            set_array("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0, lavatory_front == 0 and 1 or 0)
+        end
     end
 
     function close_overhead_luggage()
