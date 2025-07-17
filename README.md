@@ -7,7 +7,7 @@ Before take off & during descent: Window Shades Up, overhead luggage closed, tra
 Cruising and on ground: Randomly move these items.
 
 ## Installation
-- A licesned copy of [FlyJSim's Q4XP](https://www.flyjsim.com/q4xp)
+- A licensed copy of [FlyJSim's Q4XP](https://www.flyjsim.com/q4xp)
 - Install latest version of [FlyWithLua](https://github.com/X-Friese/FlyWithLua)
 - Put this script in \<your x-plane install dir>\Resources\plugins\FlyWithLua\Scripts
 
