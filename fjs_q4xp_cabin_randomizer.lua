@@ -100,7 +100,10 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     -- randomly open the overhead cabin during cruise or fasten seatbelts off
     function lower_shades_randomly()
-        if not ENABLE_WINDOW_ACTIVITY then return end
+        if not ENABLE_WINDOW_ACTIVITY then
+            raise_window_shades()
+            return 
+        end
 
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
         if seatbelts == 0 then
@@ -114,7 +117,10 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
     -- Limit the number of open overhead luggage
     local OVHD_MAX_OPEN = 5
     function open_overhead_luggage_randomly()
-        if not ENABLE_OVHD_ACTIVITY then return end
+        if not ENABLE_OVHD_ACTIVITY then
+            close_overhead_luggage()
+            return 
+        end
 
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
 
@@ -157,7 +163,10 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     -- someone used the bathroom
     function random_lavatory()
-        if not ENABLE_LAVATORY_ACTIVITY then return end
+        if not ENABLE_LAVATORY_ACTIVITY then 
+            close_lavatory()
+            return 
+        end
 
         lav_timer_interval = os.clock() - lav_timer_start
         lavatory_door = get("FJS/Q4XP/Manips/CabinInnerDoors_Ctl", 0)
@@ -195,7 +204,10 @@ if PLANE_ICAO == "DH8D" and PLANE_AUTHOR == "FlyJSim" then
 
     -- randomly lower/raise passenger trays during cruise or fasten seatbelts off
     function lower_trays_randomly()
-        if not ENABLE_TRAY_ACTIVITY then return end
+        if not ENABLE_TRAY_ACTIVITY then
+            close_passenger_trays()
+            return 
+        end
 
         DataRef("seatbelts", "sim/cockpit2/annunciators/fasten_seatbelt")
 
